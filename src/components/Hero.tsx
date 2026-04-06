@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import hero from '../assets/hero.jpg'
+import heroImg from '../assets/hero.jpg';
+import { api, HeroSettings } from '../lib/api';
 
 const Hero = () => {
+  const [settings, setSettings] = useState<HeroSettings | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const response = await api.getSettings();
+        setSettings(response.data);
+      } catch (error) {
+        console.error("Failed to fetch settings", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const heroData = settings?.hero || {
+    title: "Physiotherapie mit Herz und Kompetenz",
+    subtitle: "Bei uns stehen Sie im Mittelpunkt. Mit individueller Betreuung und modernen, ganzheitlichen Therapien begleiten wir Sie zu mehr Beweglichkeit und besserer Lebensqualität.",
+    button_text: "Kontaktieren Sie uns!",
+    button_url: null,
+    background_image: null
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-navy text-white">
       {/* Background Image Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
-          src={hero} 
+          src={heroData.background_image || heroImg} 
           alt="Physiotherapy Background" 
           className="w-full h-full object-cover opacity-30"
           referrerPolicy="no-referrer"
@@ -24,20 +50,28 @@ const Hero = () => {
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-4xl"
           >
-          
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] mb-8 tracking-tight">
-              Physiotherapie mit <span className="text-sky">Herz</span> und Kompetenz
-            </h1>
-            <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
-              Bei uns stehen Sie im Mittelpunkt. Mit individueller Betreuung und modernen, ganzheitlichen Therapien begleiten wir Sie zu mehr Beweglichkeit und besserer Lebensqualität.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="bg-sky text-white px-12 py-5 rounded-full text-lg font-bold hover:bg-white hover:text-navy transition-all shadow-2xl shadow-sky/30">
-Kontaktieren Sie uns!
-              </button>
-             
-            </div>
+            {loading ? (
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="h-16 bg-white/20 rounded w-3/4 mb-8"></div>
+                <div className="h-6 bg-white/20 rounded w-full mb-4"></div>
+                <div className="h-6 bg-white/20 rounded w-5/6 mb-12"></div>
+                <div className="h-14 bg-white/20 rounded-full w-48"></div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.1] mb-8 tracking-tight" dangerouslySetInnerHTML={{ __html: heroData.title.replace('Herz', '<span class="text-sky">Herz</span>') }}>
+                </h1>
+                <p className="text-lg md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+                  {heroData.subtitle}
+                </p>
+                
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button className="bg-sky text-white px-12 py-5 rounded-full text-lg font-bold hover:bg-white hover:text-navy transition-all shadow-2xl shadow-sky/30">
+                    {heroData.button_text}
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
@@ -72,3 +106,4 @@ Kontaktieren Sie uns!
 };
 
 export default Hero;
+

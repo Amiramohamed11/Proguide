@@ -1,48 +1,39 @@
 import axios from 'axios';
 import { mockHeroSettings, mockServices, mockTestimonials, mockFaq } from '../data/mockData';
 
-// جربي هذا الرابط (بدون v1) لأنه الأرجح في المواقع المرفوعة بنظام PHP/Laravel مثل موقعك
+// الرابط المباشر لـ API الموقع
 const API_BASE_URL = 'https://proaktivphysio.de/api'; 
 
 export const getSettings = async (): Promise<any> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/settings`);
-    
-    // هذه الجملة ستظهر في المتصفح وتكشف لنا المستور
-    console.log("SUCCESS! Data received:", response.data);
-    
+    console.log("API Response Success:", response.data);
+    // إرجاع البيانات سواء كانت داخل data أو مباشرة
     return response.data.data || response.data;
   } catch (error) {
-    // لو فشل، سيخبرنا هنا لماذا فشل
-    console.error("API Connection Failed. Using Mock Data. Error:", error);
-    return mockHeroSettings;
+    console.error("API Error - Settings:", error);
+    return mockHeroSettings; // عرض البيانات الوهمية في حال الفشل
   }
 };
 
-// كررنا نفس المنطق لبقية الدوال لضمان استقرار الموقع
-export const getServices = async () => {
+export const getServices = async (): Promise<any[]> => {
   try {
     const response = await axios.get(`${API_BASE_URL}/services`);
-    return response.data.data || response.data;
+    const data = response.data.data || response.data;
+    return Array.isArray(data) ? data : (data.services || []);
   } catch (error) {
+    console.error("API Error - Services:", error);
     return mockServices.data;
   }
 };
 
-export const getTestimonials = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/testimonials`);
-    return response.data.data || response.data;
-  } catch (error) {
-    return mockTestimonials.data;
-  }
-};
-
-export const getFaq = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/faq`);
-    return response.data.data || response.data;
-  } catch (error) {
-    return mockFaq.data;
-  }
-};
+// واجهات البيانات (Interfaces) لضمان عدم وجود أخطاء في الـ TypeScript
+export interface HeroSettings {
+  hero: {
+    title: string;
+    subtitle: string;
+    button_text: string;
+    button_url: string;
+    background_image: string | null;
+  };
+}
